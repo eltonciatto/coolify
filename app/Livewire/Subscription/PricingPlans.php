@@ -15,43 +15,44 @@ class PricingPlans extends Component
 
         $priceId = match ($type) {
             'dynamic-monthly' => config('subscription.stripe_price_id_dynamic_monthly'),
-            'dynamic-yearly' => config('subscription.stripe_price_id_dynamic_yearly'),
-            default => config('subscription.stripe_price_id_dynamic_monthly'),
+            'dynamic-yearly'  => config('subscription.stripe_price_id_dynamic_yearly'),
+            default           => config('subscription.stripe_price_id_dynamic_monthly'),
         };
 
         if (! $priceId) {
-            $this->dispatch('error', 'Price ID not found! Please contact the administrator.');
+            $this->dispatch('error', 'ID de preço não encontrado! Por favor, contate o administrador.');
 
             return;
         }
+
         $payload = [
-            'allow_promotion_codes' => true,
-            'billing_address_collection' => 'required',
-            'client_reference_id' => Auth::id().':'.currentTeam()->id,
-            'line_items' => [[
-                'price' => $priceId,
+            'allow_promotion_codes'     => true,
+            'billing_address_collection'=> 'required',
+            'client_reference_id'       => Auth::id().':'.currentTeam()->id,
+            'line_items'                => [[
+                'price'               => $priceId,
                 'adjustable_quantity' => [
                     'enabled' => true,
                     'minimum' => 2,
                 ],
-                'quantity' => 2,
+                'quantity'            => 2,
             ]],
-            'tax_id_collection' => [
+            'tax_id_collection'         => [
                 'enabled' => true,
             ],
-            'automatic_tax' => [
-                'enabled' => true,
+            'automatic_tax'             => [
+                'enabled' => false,
             ],
-            'subscription_data' => [
+            'subscription_data'         => [
                 'metadata' => [
                     'user_id' => Auth::id(),
                     'team_id' => currentTeam()->id,
                 ],
             ],
             'payment_method_collection' => 'if_required',
-            'mode' => 'subscription',
-            'success_url' => route('dashboard', ['success' => true]),
-            'cancel_url' => route('subscription.index', ['cancelled' => true]),
+            'mode'                      => 'subscription',
+            'success_url'               => route('dashboard', ['success' => true]),
+            'cancel_url'                => route('subscription.index', ['cancelled' => true]),
         ];
 
         $customer = currentTeam()->subscription?->stripe_customer_id ?? null;
@@ -63,6 +64,7 @@ class PricingPlans extends Component
         } else {
             $payload['customer_email'] = Auth::user()->email;
         }
+
         $session = Session::create($payload);
 
         return redirect($session->url, 303);
