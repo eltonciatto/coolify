@@ -37,7 +37,7 @@ class ResetPassword extends Notification
     {
         $type = set_transanctional_email_settings();
         if (blank($type)) {
-            throw new Exception('No email settings found.');
+            throw new Exception('T2iD PaaS: configurações de e-mail não encontradas.');
         }
 
         return ['mail'];
@@ -55,8 +55,11 @@ class ResetPassword extends Notification
     protected function buildMailMessage($url)
     {
         $mail = new MailMessage;
-        $mail->subject('Coolify: Reset Password');
-        $mail->view('emails.reset-password', ['url' => $url, 'count' => config('auth.passwords.'.config('auth.defaults.passwords').'.expire')]);
+        $mail->subject('T2iD PaaS: Redefinir Senha');
+        $mail->view('emails.reset-password', [
+            'url'   => $url,
+            'count' => config('auth.passwords.' . config('auth.defaults.passwords') . '.expire'),
+        ]);
 
         return $mail;
     }
